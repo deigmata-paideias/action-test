@@ -28,6 +28,7 @@ read_event() {
 
 COMMENT_BODY=$(read_event '.comment.body')
 ISSUE_NUMBER=$(read_event '.issue.number')
+COMMENT_USER=$(read_event '.comment.user.login')
 
 OWNER=$(echo "${GITHUB_REPOSITORY}" | cut -d/ -f1)
 REPO=$(echo "${GITHUB_REPOSITORY}" | cut -d/ -f2)
@@ -118,7 +119,19 @@ process_command() {
   line="$(echo "$line" | sed -e 's/^\s*//' -e 's/\s*$//')"
   case "$line" in
     \/assign*)
-      args="${line#\/assign}"; read -ra users <<<"$args"; for i in "${!users[@]}"; do users[$i]=$(normalize_user "${users[$i]}"); done; assign "${users[@]}";;
+      args="${line#\/assign}"
+      args="$(echo "$args" | sed -e 's/^\s*//' -e 's/\s*$//')"
+      if [ -z "$args" ]; then
+        # If no users specified, assign to the commenter
+        assign "$COMMENT_USER"
+      else
+        read -ra users <<<"$args"
+        for i in "${!users[@]}"; do
+          users[$i]=$(normalize_user "${users[$i]}")
+        done
+        assign "${users[@]}"
+      fi
+      ;;
     \/unassign*)
       args="${line#\/unassign}"; read -ra users <<<"$args"; for i in "${!users[@]}"; do users[$i]=$(normalize_user "${users[$i]}"); done; unassign "${users[@]}";;
     \/lgtm)

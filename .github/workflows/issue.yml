@@ -33,7 +33,7 @@ jobs:
       - name: Run issue manager script
         run: |
           echo "Running issue manager script"
-          bash actions/scripts/issue-manager.sh
+          bash scripts/issue-manager.sh
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_EVENT_PATH: ${{ github.event_path }}
